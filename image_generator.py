@@ -1,14 +1,20 @@
 import os
 import logging
 import requests
-from openai import OpenAI
+import fal_client
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
+FAL_KEY = os.environ.get("FAL_KEY")
+if FAL_KEY:
+    os.environ["FAL_KEY"] = FAL_KEY
 
 def generate_story_images(story_data, story_id):
-    """Generate images for story scenes using DALL-E"""
+    """Generate images for story scenes using Flux AI"""
     try:
+        # Check if FAL_KEY is available
+        if not os.environ.get("FAL_KEY"):
+            logging.warning("FAL_KEY not found, skipping image generation")
+            return []
+            
         # Ensure images directory exists
         images_dir = os.path.join('static', 'images')
         os.makedirs(images_dir, exist_ok=True)
@@ -19,24 +25,25 @@ def generate_story_images(story_data, story_id):
         # Limit to 3 images to avoid excessive API usage
         for i, scene in enumerate(scenes[:3]):
             try:
-                # Create detailed prompt for DALL-E
+                # Create detailed prompt for Flux
                 image_prompt = f"""Create a beautiful, artistic illustration in the style of traditional Indian miniature paintings depicting: {scene}
 
-Style: Traditional Indian art, rich colors, detailed patterns, mythological theme, spiritual atmosphere, ornate decorations, golden accents.
+Style: Traditional Indian art, rich vibrant colors, detailed patterns, mythological theme, spiritual atmosphere, ornate decorations, golden accents, divine aura.
 
-Focus on authenticity to Vedic Hindu traditions and mythology."""
+Focus on authenticity to Vedic Hindu traditions and mythology. High quality, detailed artwork."""
 
-                response = client.images.generate(
-                    model="dall-e-3",
-                    prompt=image_prompt,
-                    n=1,
-                    size="1024x1024",
-                    quality="standard"
-                )
+                # Use Flux Schnell for fast generation
+                result = fal_client.subscribe("fal-ai/flux/schnell", {
+                    "prompt": image_prompt,
+                    "image_size": "landscape_4_3",
+                    "num_inference_steps": 4,
+                    "num_images": 1,
+                    "enable_safety_checker": True
+                })
                 
-                if not response.data or len(response.data) == 0:
-                    raise ValueError("No image data received from OpenAI")
-                image_url = response.data[0].url
+                if not result or not result.get('images') or len(result['images']) == 0:
+                    raise ValueError("No image data received from Flux")
+                image_url = result['images'][0]['url']
                 
                 # Download and save the image
                 if not image_url:
@@ -50,38 +57,45 @@ Focus on authenticity to Vedic Hindu traditions and mythology."""
                         f.write(img_response.content)
                     
                     image_paths.append(f"/static/images/{filename}")
-                    logging.info(f"Generated image: {filename}")
+                    logging.info(f"Generated Flux image: {filename}")
                 
             except Exception as e:
-                logging.error(f"Failed to generate image {i+1}: {e}")
+                logging.error(f"Failed to generate Flux image {i+1}: {e}")
                 continue
         
         return image_paths
         
     except Exception as e:
-        logging.error(f"Image generation failed: {e}")
+        logging.error(f"Flux image generation failed: {e}")
         return []
 
 def generate_character_image(character_description):
-    """Generate an image of a specific character"""
+    """Generate an image of a specific character using Flux AI"""
     try:
+        # Check if FAL_KEY is available
+        if not os.environ.get("FAL_KEY"):
+            logging.warning("FAL_KEY not found, skipping character image generation")
+            return None
+            
         image_prompt = f"""Create a detailed portrait in traditional Indian miniature painting style: {character_description}
 
 Style: Classical Indian art, vibrant colors, ornate clothing, divine attributes, spiritual aura, intricate jewelry, traditional pose.
 
-Make it authentic to Vedic Hindu iconography and mythology."""
+Make it authentic to Vedic Hindu iconography and mythology. High quality, detailed artwork."""
 
-        response = client.images.generate(
-            model="dall-e-3",
-            prompt=image_prompt,
-            n=1,
-            size="1024x1024"
-        )
+        # Use Flux Schnell for fast generation
+        result = fal_client.subscribe("fal-ai/flux/schnell", {
+            "prompt": image_prompt,
+            "image_size": "square",
+            "num_inference_steps": 4,
+            "num_images": 1,
+            "enable_safety_checker": True
+        })
         
-        if not response.data or len(response.data) == 0:
-            raise ValueError("No image data received from OpenAI")
-        return response.data[0].url
+        if not result or not result.get('images') or len(result['images']) == 0:
+            raise ValueError("No image data received from Flux")
+        return result['images'][0]['url']
         
     except Exception as e:
-        logging.error(f"Character image generation failed: {e}")
+        logging.error(f"Flux character image generation failed: {e}")
         return None
