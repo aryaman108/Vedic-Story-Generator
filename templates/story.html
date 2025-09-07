@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}{{ story.title }} - Vedic Stories{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Story Header -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="card-title mb-2">{{ story.title }}</h1>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-clock me-1"></i>
+                                Created on {{ story.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                            </p>
+                        </div>
+                        <div class="btn-group">
+                            {% if story.audio_path %}
+                            <button class="btn btn-primary" id="playAudioBtn">
+                                <i class="fas fa-play me-1"></i>
+                                Play Audio
+                            </button>
+                            {% endif %}
+                            <a href="{{ url_for('download_story', story_id=story.id) }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-download me-1"></i>
+                                Download
+                            </a>
+                            <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this story?')">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash me-1"></i>
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Original Prompt:</strong>
+                        <blockquote class="blockquote-footer mt-2">
+                            {{ story.prompt }}
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Section -->
+            {% if story.audio_path %}
+            <div class="card shadow mb-4" id="audioSection" style="display: none;">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-volume-up me-2"></i>
+                        Audio Narration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <audio controls class="w-100" id="storyAudio">
+                        <source src="{{ story.audio_path }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Story Content -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-book-open me-2"></i>
+                        Story
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="story-content">
+                        {{ story.content | replace('\n', '<br>') | safe }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story Images -->
+            {% if story.get_images() %}
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-images me-2"></i>
+                        Story Illustrations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for image_path in story.get_images() %}
+                        <div class="col-md-4">
+                            <div class="position-relative">
+                                <img src="{{ image_path }}" class="img-fluid rounded shadow-sm story-image" alt="Story illustration">
+                                <button class="btn btn-sm btn-primary position-absolute top-0 end-0 m-2" onclick="openImageModal('{{ image_path }}')">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Navigation -->
+            <div class="text-center">
+                <a href="{{ url_for('library') }}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    Back to Library
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>
+                    Create New Story
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Story Illustration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="Story illustration">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Audio controls
+    const playBtn = document.getElementById('playAudioBtn');
+    const audioSection = document.getElementById('audioSection');
+    const audio = document.getElementById('storyAudio');
+    
+    if (playBtn && audioSection && audio) {
+        playBtn.addEventListener('click', function() {
+            audioSection.style.display = 'block';
+            audio.play();
+            this.innerHTML = '<i class="fas fa-pause me-1"></i>Pause Audio';
+            
+            audio.addEventListener('pause', () => {
+                playBtn.innerHTML = '<i class="fas fa-play me-1"></i>Play Audio';
+            });
+            
+            audio.addEventListener('play', () => {
+                playBtn.innerHTML = '<i class="fas fa-pause me-1"></i>Pause Audio';
+            });
+        });
+    }
+});
+
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    new bootstrap.Modal(document.getElementById('imageModal')).show();
+}
+</script>
+{% endblock %}

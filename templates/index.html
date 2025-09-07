@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Vedic Stories{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-scroll me-3"></i>
+                Vedic Story Generator
+            </h1>
+            <p class="lead mb-4">
+                Create beautiful stories inspired by ancient Hindu mythology, the Ramayana, Mahabharata, Puranas, and Vedas.
+                Our AI brings these timeless tales to life with accompanying images and audio narration.
+            </p>
+        </div>
+    </div>
+
+    <!-- Story Generation Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-feather-alt me-2"></i>
+                        Create Your Story
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form id="storyForm">
+                        <div class="mb-4">
+                            <label for="storyPrompt" class="form-label">
+                                <strong>Story Prompt</strong>
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="storyPrompt" 
+                                rows="4" 
+                                placeholder="Enter your prompt about Vedic mythology, characters, or themes. For example: 'Tell me about Krishna's childhood adventures' or 'Create a story about Hanuman's devotion'..."
+                                required></textarea>
+                            <div class="form-text">
+                                Describe the type of story you'd like to hear. Include characters, themes, or specific events from Vedic literature.
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary btn-lg w-100" id="generateBtn">
+                                    <i class="fas fa-magic me-2"></i>
+                                    Generate Story
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('library') }}" class="btn btn-outline-secondary btn-lg w-100">
+                                    <i class="fas fa-library me-2"></i>
+                                    View Library
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="row justify-content-center mt-4" id="loadingSection" style="display: none;">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5>Creating Your Vedic Story</h5>
+                    <p class="text-muted mb-0">
+                        <span id="loadingText">Generating story content...</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Story Result -->
+    <div class="row justify-content-center mt-4" id="storyResult" style="display: none;">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0" id="storyTitle"></h3>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary btn-sm" id="playAudioBtn">
+                            <i class="fas fa-play me-1"></i>
+                            Play Audio
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="downloadBtn">
+                            <i class="fas fa-download me-1"></i>
+                            Download
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Audio Controls -->
+                    <div class="mb-4" id="audioSection" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <audio controls class="w-100" id="storyAudio">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                    </div>
+
+                    <!-- Story Content -->
+                    <div class="story-content mb-4" id="storyContent"></div>
+
+                    <!-- Story Images -->
+                    <div id="storyImages" class="row g-3"></div>
+
+                    <!-- Story Metadata -->
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>Characters:</strong> 
+                                    <span id="storyCharacters"></span>
+                                </small>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <strong>Moral:</strong> 
+                                    <span id="storyMoral"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example Prompts -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Example Prompts
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="example-prompt" data-prompt="Tell the story of young Krishna stealing butter and the lesson it teaches about divine playfulness">
+                                <i class="fas fa-child me-2"></i>
+                                Krishna's butter-stealing adventures
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="example-prompt" data-prompt="Create a story about Hanuman's unwavering devotion to Rama and how it inspires us">
+                                <i class="fas fa-heart me-2"></i>
+                                Hanuman's devotion to Rama
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="example-prompt" data-prompt="Tell about the time when Arjuna faced his doubts before the great battle and Krishna's guidance">
+                                <i class="fas fa-bow-arrow me-2"></i>
+                                Arjuna's dilemma and Krishna's wisdom
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="example-prompt" data-prompt="Create a story about Sita's strength during her time in Lanka and what it teaches about resilience">
+                                <i class="fas fa-female me-2"></i>
+                                Sita's courage in adversity
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the story generation functionality
+    initializeStoryGenerator();
+    
+    // Handle example prompt clicks
+    document.querySelectorAll('.example-prompt').forEach(prompt => {
+        prompt.addEventListener('click', function() {
+            document.getElementById('storyPrompt').value = this.dataset.prompt;
+        });
+    });
+});
+</script>
+{% endblock %}
