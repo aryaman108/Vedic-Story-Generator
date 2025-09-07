@@ -29,11 +29,10 @@ def generate_story():
             return jsonify({'error': 'Failed to generate story'}), 500
         
         # Create new story record
-        story = Story(
-            title=story_data['title'],
-            prompt=prompt,
-            content=story_data['content']
-        )
+        story = Story()
+        story.title = story_data['title']
+        story.prompt = prompt
+        story.content = story_data['content']
         
         db.session.add(story)
         db.session.commit()
