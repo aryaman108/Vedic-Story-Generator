@@ -1,81 +1,41 @@
 import os
 import logging
+# from google.cloud import texttospeech  # Requires credentials
 from gtts import gTTS
 import uuid
 
 def generate_audio_narration(story_content, story_id):
     """Generate audio narration for the story using gTTS"""
     try:
-        # Ensure audio directory exists
+        # Ensure audio directory exists - use Mythoscribe/static path
         audio_dir = os.path.join('static', 'audio')
         os.makedirs(audio_dir, exist_ok=True)
-        
-        # Clean the text for better speech
-        clean_text = clean_text_for_speech(story_content)
-        
+
         # Generate audio using gTTS
-        tts = gTTS(text=clean_text, lang='en', slow=False)
+        # Truncate content if too long to avoid gTTS limitations
+        max_chars = 4000  # gTTS has limitations on text length
+        if len(story_content) > max_chars:
+            story_content = story_content[:max_chars]
+            logging.info(f"Truncated story content to {max_chars} characters for audio generation")
+        
+        tts = gTTS(text=story_content, lang='en', slow=False, lang_check=False)
         
         # Save audio file
         filename = f"story_{story_id}_narration.mp3"
         filepath = os.path.join(audio_dir, filename)
         
         tts.save(filepath)
-        
         logging.info(f"Generated audio: {filename}")
-        return f"/static/audio/{filename}"
         
+        # Verify file was created
+        if os.path.exists(filepath):
+            logging.info(f"Audio file exists at: {filepath}")
+            # Return the web-accessible path
+            return f"/static/audio/{filename}"
+        else:
+            logging.error(f"Audio file was not created at: {filepath}")
+            return None
+
     except Exception as e:
         logging.error(f"Audio generation failed: {e}")
-        return None
-
-def clean_text_for_speech(text):
-    """Clean text to make it more suitable for speech synthesis"""
-    # Remove excessive formatting
-    text = text.replace('\n\n', '. ')
-    text = text.replace('\n', ' ')
-    
-    # Handle common Sanskrit terms pronunciation
-    replacements = {
-        'Krishna': 'Krish-na',
-        'Arjuna': 'Ar-ju-na',
-        'Dharma': 'Dhar-ma',
-        'Karma': 'Kar-ma',
-        'Brahma': 'Brah-ma',
-        'Vishnu': 'Vish-nu',
-        'Shiva': 'Shi-va',
-        'Rama': 'Ra-ma',
-        'Sita': 'See-ta',
-        'Hanuman': 'Ha-nu-man',
-        'Mahabharata': 'Ma-ha-bha-ra-ta',
-        'Ramayana': 'Ra-ma-ya-na'
-    }
-    
-    for original, replacement in replacements.items():
-        text = text.replace(original, replacement)
-    
-    # Ensure proper sentence endings
-    text = text.replace('..', '.')
-    text = text.replace('?.', '?')
-    text = text.replace('!.', '!')
-    
-    return text
-
-def generate_audio_segment(text_segment, segment_id):
-    """Generate audio for a specific text segment"""
-    try:
-        audio_dir = os.path.join('static', 'audio')
-        os.makedirs(audio_dir, exist_ok=True)
-        
-        clean_text = clean_text_for_speech(text_segment)
-        tts = gTTS(text=clean_text, lang='en', slow=False)
-        
-        filename = f"segment_{segment_id}_{uuid.uuid4().hex[:8]}.mp3"
-        filepath = os.path.join(audio_dir, filename)
-        
-        tts.save(filepath)
-        return f"/static/audio/{filename}"
-        
-    except Exception as e:
-        logging.error(f"Audio segment generation failed: {e}")
         return None

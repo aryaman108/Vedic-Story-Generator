@@ -3,109 +3,175 @@
 {% block title %}Story Library - Vedic Stories{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-lg-8">
-            <h1 class="display-5 mb-3">
-                <i class="fas fa-library me-3"></i>
-                Story Library
-            </h1>
-            <p class="lead">
-                Browse through your collection of generated Vedic mythology stories.
-            </p>
-        </div>
-        <div class="col-lg-4 text-lg-end">
-            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
-                <i class="fas fa-plus me-2"></i>
-                Create New Story
-            </a>
+<div class="container-fluid py-4">
+<style>
+.story-date,
+.story-date span {
+    color: #ffffff !important;
+}
+.preview-text {
+    color: #ffffff !important;
+}
+.section-label {
+    color: #ffffff !important;
+}
+.section-label span {
+    color: #ffffff !important;
+}
+.library-header .lead {
+    color: #ffffff !important;
+}
+</style>
+    <!-- Enhanced Header -->
+    <div class="library-header mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="header-content">
+                    <div class="header-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="header-text">
+                        <h1 class="display-4 mb-2">
+                            <span class="gradient-text">Story Library</span>
+                        </h1>
+                        <p class="lead text-muted mb-0">
+                            Discover and explore your collection of sacred Vedic mythology stories
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                <a href="{{ url_for('index') }}" class="btn btn-create-story">
+                    <div class="btn-content">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create New Story</span>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Stories Grid -->
+    <!-- Enhanced Stories Grid -->
     {% if stories %}
-    <div class="row g-4">
+    <div class="stories-grid">
         {% for story in stories %}
-        <div class="col-lg-6 col-xl-4">
-            <div class="card shadow h-100">
+        <div class="story-card-wrapper">
+            <div class="story-card-modern">
                 <!-- Story Image Preview -->
                 {% if story.get_images() %}
-                <div class="position-relative">
-                    <img src="{{ story.get_images()[0] }}" class="card-img-top story-preview-image" alt="Story preview">
-                    <div class="position-absolute top-0 end-0 m-2">
-                        {% if story.audio_path %}
-                        <span class="badge bg-primary">
-                            <i class="fas fa-volume-up me-1"></i>Audio
-                        </span>
-                        {% endif %}
-                        {% if story.get_images() %}
-                        <span class="badge bg-secondary">
-                            <i class="fas fa-images me-1"></i>{{ story.get_images() | length }}
-                        </span>
-                        {% endif %}
+                <div class="position-relative overflow-hidden rounded-top">
+                    <img src="{{ story.get_images()[0] }}" class="card-img-top story-preview-image" alt="Story preview" style="transition: transform 0.3s ease;">
+                    <div class="position-absolute top-0 end-0 m-3">
+                        <div class="d-flex gap-1">
+                            {% if story.audio_path %}
+                            <span class="badge bg-primary rounded-pill px-2 py-1">
+                                <i class="fas fa-volume-up me-1"></i>Audio
+                            </span>
+                            {% endif %}
+                            {% if story.get_images() %}
+                            <span class="badge bg-secondary rounded-pill px-2 py-1">
+                                <i class="fas fa-images me-1"></i>{{ story.get_images() | length }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- Overlay for better text readability -->
+                    <div class="position-absolute bottom-0 start-0 w-100 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <h6 class="text-white mb-0 fw-bold">{{ story.title[:35] }}{% if story.title|length > 35 %}...{% endif %}</h6>
                     </div>
                 </div>
                 {% else %}
-                <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-light" style="height: 200px;">
+                <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center text-light rounded-top" style="height: 200px;">
                     <div class="text-center">
-                        <i class="fas fa-scroll fa-3x mb-2"></i>
-                        <h6>{{ story.title[:30] }}{% if story.title|length > 30 %}...{% endif %}</h6>
+                        <i class="fas fa-scroll fa-3x mb-3 opacity-75"></i>
+                        <h6 class="fw-bold">{{ story.title[:30] }}{% if story.title|length > 30 %}...{% endif %}</h6>
                     </div>
                 </div>
                 {% endif %}
 
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ story.title }}</h5>
-                    
-                    <p class="card-text text-muted small mb-2">
-                        <i class="fas fa-quote-left me-1"></i>
-                        {{ story.prompt[:100] }}{% if story.prompt|length > 100 %}...{% endif %}
-                    </p>
-                    
-                    <p class="card-text flex-grow-1">
-                        {{ story.content[:150] }}{% if story.content|length > 150 %}...{% endif %}
-                    </p>
-                    
-                    <div class="mt-auto">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>
-                                {{ story.created_at.strftime('%b %d, %Y') }}
-                            </small>
-                            <div class="btn-group">
-                                <a href="{{ url_for('view_story', story_id=story.id) }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-eye me-1"></i>
-                                    View
-                                </a>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        {% if story.audio_path %}
-                                        <li>
-                                            <a class="dropdown-item" href="#" onclick="playStoryAudio('{{ story.audio_path }}', '{{ story.title }}')">
-                                                <i class="fas fa-play me-2"></i>Play Audio
-                                            </a>
-                                        </li>
-                                        {% endif %}
-                                        <li>
-                                            <a class="dropdown-item" href="{{ url_for('download_story', story_id=story.id) }}">
-                                                <i class="fas fa-download me-2"></i>Download
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this story?')">
-                                                <button type="submit" class="dropdown-item text-danger">
-                                                    <i class="fas fa-trash me-2"></i>Delete
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
+                <div class="story-card-content">
+                    <!-- Enhanced Story Header -->
+                    <div class="story-header">
+                        <div class="story-meta">
+                            <div class="story-date">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>{{ story.created_at.strftime('%b %d, %Y') }}</span>
                             </div>
+                            <div class="story-badges">
+                                {% if story.audio_path %}
+                                <span class="badge-modern badge-audio">
+                                    <i class="fas fa-volume-up"></i>
+                                    <span>Audio</span>
+                                </span>
+                                {% endif %}
+                                {% if story.get_images() %}
+                                <span class="badge-modern badge-images">
+                                    <i class="fas fa-images"></i>
+                                    <span>{{ story.get_images() | length }}</span>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <h3 class="story-title">{{ story.title[:40] }}{% if story.title|length > 40 %}...{% endif %}</h3>
+                    </div>
+
+                    <!-- Enhanced Content Preview -->
+                    <div class="story-preview">
+                        <div class="preview-section">
+                            <div class="section-label">
+                                <i class="fas fa-quote-left"></i>
+                                <span>Prompt</span>
+                            </div>
+                            <p class="preview-text">{{ story.prompt[:100] }}{% if story.prompt|length > 100 %}...{% endif %}</p>
+                        </div>
+
+                        <div class="preview-section">
+                            <div class="section-label">
+                                <i class="fas fa-book-open"></i>
+                                <span>Story</span>
+                            </div>
+                            <p class="preview-text">{{ story.content[:150] }}{% if story.content|length > 150 %}...{% endif %}</p>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Action Buttons -->
+                    <div class="story-actions">
+                        <a href="{{ url_for('view_story', story_id=story.id) }}" class="action-btn action-primary">
+                            <div class="btn-content">
+                                <i class="fas fa-eye"></i>
+                                <span>Read Story</span>
+                            </div>
+                        </a>
+
+                        <div class="action-menu">
+                            <button type="button" class="action-btn action-secondary" data-bs-toggle="dropdown">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if story.audio_path %}
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="playStoryAudio('{{ story.audio_path }}', '{{ story.title }}')">
+                                        <i class="fas fa-play"></i>
+                                        <span>Play Audio</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('download_story', story_id=story.id) }}">
+                                        <i class="fas fa-download"></i>
+                                        <span>Download</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ url_for('delete_story', story_id=story.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this story?')">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-trash"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -117,21 +183,21 @@
     <!-- Pagination would go here if needed -->
     
     {% else %}
-    <!-- Empty State -->
-    <div class="text-center py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-6">
-                <i class="fas fa-scroll fa-4x text-muted mb-4"></i>
-                <h3 class="mb-3">No Stories Yet</h3>
-                <p class="lead text-muted mb-4">
-                    You haven't created any Vedic mythology stories yet. Start by generating your first story!
-                </p>
-                <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-plus me-2"></i>
-                    Create Your First Story
-                </a>
-            </div>
+    <!-- Enhanced Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-book-open"></i>
         </div>
+        <h3>Your Story Library Awaits</h3>
+        <p class="mb-4">
+            You haven't created any Vedic mythology stories yet. Begin your journey by generating your first sacred tale!
+        </p>
+        <a href="{{ url_for('index') }}" class="btn-create-story">
+            <div class="btn-content">
+                <i class="fas fa-plus-circle"></i>
+                <span>Create Your First Story</span>
+            </div>
+        </a>
     </div>
     {% endif %}
 </div>

@@ -3,9 +3,49 @@
 {% block title %}{{ story.title }} - Vedic Stories{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<style>
+.text-muted {
+    color: #ffffff !important;
+}
+.blockquote-footer,
+.blockquote-footer p,
+.blockquote-footer span {
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+}
+.card-body strong {
+    color: #ffffff !important;
+}
+</style>
+<!-- Sacred Background Elements -->
+<div class="sacred-bg-elements">
+    <div class="sacred-geometry-pattern"></div>
+    <div class="divine-light-rays"></div>
+</div>
+
+
+<!-- Quantum Particles Container -->
+<div class="quantum-particles" id="quantumParticles"></div>
+
+<div class="container py-5 sacred-experience perfected-ui">
     <div class="row justify-content-center">
         <div class="col-lg-10">
+            <!-- Sacred Welcome Message -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 sacred-title">
+                    <span class="sacred-om">ॐ</span>
+                    Vedic Story Experience
+                    <span class="sacred-om">ॐ</span>
+                </h1>
+                <p class="lead sacred-subtitle">
+                    Immerse yourself in divine wisdom and sacred narratives
+                </p>
+                <div class="sacred-divider">
+                    <span class="sacred-symbol">🪔</span>
+                    <span class="sacred-line"></span>
+                    <span class="sacred-symbol">🪔</span>
+                </div>
+            </div>
             <!-- Story Header -->
             <div class="card shadow mb-4">
                 <div class="card-header">
@@ -18,6 +58,10 @@
                             </p>
                         </div>
                         <div class="btn-group">
+                            <button class="btn btn-success" id="playVideoBtn" {% if not story.video_path %}disabled{% endif %}>
+                                <i class="fas fa-play me-1"></i>
+                                {% if story.video_path %}Play Video{% else %}Video Processing{% endif %}
+                            </button>
                             {% if story.audio_path %}
                             <button class="btn btn-primary" id="playAudioBtn">
                                 <i class="fas fa-play me-1"></i>
@@ -37,10 +81,10 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="card-body">
                     <div class="mb-3">
-                        <strong>Original Prompt:</strong>
+                        <strong style="color: #ffffff !important; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">Original Prompt:</strong>
                         <blockquote class="blockquote-footer mt-2">
                             {{ story.prompt }}
                         </blockquote>
@@ -75,11 +119,56 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="story-content">
+                    <div class="story-content text-center">
                         {{ story.content | replace('\n', '<br>') | safe }}
                     </div>
                 </div>
             </div>
+
+            <!-- Characters Section -->
+            {% if story.get_characters() %}
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Characters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2 characters-row">
+                        {% for character in story.get_characters() %}
+                        <div class="col-md-4">
+                            <div class="badge character-badge p-2 fs-6 w-100">
+                                <i class="fas fa-user me-1"></i>
+                                {{ character }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Moral Lesson Section -->
+            {% if story.moral %}
+            <div class="card shadow mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Moral Lesson
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <blockquote class="blockquote mb-0">
+                        <p class="mb-0 fs-5 text-primary">
+                            <i class="fas fa-quote-left me-2 text-warning"></i>
+                            {{ story.moral }}
+                            <i class="fas fa-quote-right ms-2 text-warning"></i>
+                        </p>
+                    </blockquote>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Story Images -->
             {% if story.get_images() %}
@@ -91,13 +180,17 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row g-3">
+                    <div class="story-images-grid">
                         {% for image_path in story.get_images() %}
-                        <div class="col-md-4">
-                            <div class="position-relative">
-                                <img src="{{ image_path }}" class="img-fluid rounded shadow-sm story-image" alt="Story illustration">
-                                <button class="btn btn-sm btn-primary position-absolute top-0 end-0 m-2" onclick="openImageModal('{{ image_path }}')">
+                        <div class="story-image-container">
+                            <img src="{{ image_path }}"
+                                 class="story-illustration"
+                                 alt="Story illustration {{ loop.index }}"
+                                 onclick="openImageModal('{{ image_path }}', '{{ loop.index }}')">
+                            <div class="image-overlay">
+                                <button class="expand-btn" onclick="openImageModal('{{ image_path }}', '{{ loop.index }}')">
                                     <i class="fas fa-expand"></i>
+                                    <span>View Full Size</span>
                                 </button>
                             </div>
                         </div>
@@ -106,6 +199,55 @@
                 </div>
             </div>
             {% endif %}
+
+            <!-- Video Section -->
+            <div class="card shadow mb-4" id="videoSection">
+                {% if story.video_path %}
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-video me-2"></i>
+                        Story Video
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Video Ready!</strong> Click play to watch the complete multimedia experience.
+                    </div>
+                    <div class="video-container mb-3">
+                        <video controls class="w-100 rounded shadow" id="storyVideo" poster="{{ story.get_images()[0] if story.get_images() else '' }}">
+                            <source src="{{ story.video_path }}" type="video/mp4">
+                            Your browser does not support the video element.
+                        </video>
+                    </div>
+                    <div class="text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            This video combines the story images with narration audio and text captions
+                        </small>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card-header bg-warning">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-video-slash me-2"></i>
+                        Video Processing
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock me-2"></i>
+                        <strong>Video is being processed.</strong> Your story video is currently being generated.
+                        <br><small class="mt-2 d-block">This may take a few minutes. Refresh the page to check if it's ready!</small>
+                    </div>
+                    <div class="text-center">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
 
             <!-- Navigation -->
             <div class="text-center">
@@ -122,16 +264,19 @@
     </div>
 </div>
 
-<!-- Image Modal -->
-<div class="modal fade" id="imageModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+<!-- Enhanced Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Story Illustration</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="modalTitle">Story Illustration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center">
-                <img id="modalImage" src="" class="img-fluid" alt="Story illustration">
+            <div class="modal-body text-center p-4">
+                <img id="modalImage" src="" class="img-fluid rounded shadow-lg" alt="Story illustration" style="max-height: 80vh; width: auto;">
+                <div class="mt-3">
+                    <small class="text-muted">Click outside the image or press ESC to close</small>
+                </div>
             </div>
         </div>
     </div>
@@ -141,31 +286,84 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Audio controls
-    const playBtn = document.getElementById('playAudioBtn');
+    // Video controls
+    const playVideoBtn = document.getElementById('playVideoBtn');
+    const video = document.getElementById('storyVideo');
+
+    if (playVideoBtn && video) {
+        playVideoBtn.addEventListener('click', function() {
+            if (this.disabled) {
+                // Show video section if video is processing
+                const videoSection = document.getElementById('videoSection');
+                if (videoSection) {
+                    videoSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                return;
+            }
+
+            // Scroll to video section
+            video.scrollIntoView({ behavior: 'smooth' });
+            video.play();
+            this.innerHTML = '<i class="fas fa-pause me-1"></i>Pause Video';
+
+            video.addEventListener('pause', () => {
+                playVideoBtn.innerHTML = '<i class="fas fa-play me-1"></i>Play Video';
+            });
+
+            video.addEventListener('play', () => {
+                playVideoBtn.innerHTML = '<i class="fas fa-pause me-1"></i>Pause Video';
+            });
+        });
+    }
+
+    // Audio controls (fallback if no video)
+    const playAudioBtn = document.getElementById('playAudioBtn');
     const audioSection = document.getElementById('audioSection');
     const audio = document.getElementById('storyAudio');
-    
-    if (playBtn && audioSection && audio) {
-        playBtn.addEventListener('click', function() {
+
+    if (playAudioBtn && audioSection && audio) {
+        playAudioBtn.addEventListener('click', function() {
             audioSection.style.display = 'block';
             audio.play();
             this.innerHTML = '<i class="fas fa-pause me-1"></i>Pause Audio';
-            
+
             audio.addEventListener('pause', () => {
-                playBtn.innerHTML = '<i class="fas fa-play me-1"></i>Play Audio';
+                playAudioBtn.innerHTML = '<i class="fas fa-play me-1"></i>Play Audio';
             });
-            
+
             audio.addEventListener('play', () => {
-                playBtn.innerHTML = '<i class="fas fa-pause me-1"></i>Pause Audio';
+                playAudioBtn.innerHTML = '<i class="fas fa-pause me-1"></i>Pause Audio';
             });
         });
     }
 });
 
-function openImageModal(imageSrc) {
-    document.getElementById('modalImage').src = imageSrc;
-    new bootstrap.Modal(document.getElementById('imageModal')).show();
+function openImageModal(imageSrc, imageIndex) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('modalTitle');
+
+    // Set image source
+    modalImage.src = imageSrc;
+
+    // Update modal title with image number
+    if (modalTitle) {
+        modalTitle.textContent = `Story Illustration ${imageIndex}`;
+    }
+
+    // Show modal with proper accessibility
+    const bsModal = new bootstrap.Modal(modal, {
+        backdrop: 'static',
+        keyboard: true,
+        focus: true
+    });
+
+    bsModal.show();
+
+    // Focus management for accessibility
+    modal.addEventListener('shown.bs.modal', function() {
+        modalImage.focus();
+    });
 }
 </script>
 {% endblock %}

@@ -3,15 +3,15 @@
 {% block title %}Generate Vedic Stories{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="page-container">
     <!-- Hero Section -->
-    <div class="row justify-content-center mb-5">
-        <div class="col-lg-8 text-center">
-            <h1 class="display-4 mb-4">
-                <i class="fas fa-scroll me-3"></i>
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <i class="fas fa-scroll"></i>
                 Vedic Story Generator
             </h1>
-            <p class="lead mb-4">
+            <p class="hero-subtitle">
                 Create beautiful stories inspired by ancient Hindu mythology, the Ramayana, Mahabharata, Puranas, and Vedas.
                 Our AI brings these timeless tales to life with accompanying images and audio narration.
             </p>
@@ -19,25 +19,25 @@
     </div>
 
     <!-- Story Generation Form -->
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow">
+    <div class="form-section">
+        <div class="form-container">
+            <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title mb-0">
-                        <i class="fas fa-feather-alt me-2"></i>
+                    <h3 class="card-title">
+                        <i class="fas fa-feather-alt"></i>
                         Create Your Story
                     </h3>
                 </div>
                 <div class="card-body">
                     <form id="storyForm">
-                        <div class="mb-4">
+                        <div class="form-group">
                             <label for="storyPrompt" class="form-label">
                                 <strong>Story Prompt</strong>
                             </label>
-                            <textarea 
-                                class="form-control" 
-                                id="storyPrompt" 
-                                rows="4" 
+                            <textarea
+                                class="form-control"
+                                id="storyPrompt"
+                                rows="4"
                                 placeholder="Enter your prompt about Vedic mythology, characters, or themes. For example: 'Tell me about Krishna's childhood adventures' or 'Create a story about Hanuman's devotion'..."
                                 required></textarea>
                             <div class="form-text">
@@ -45,19 +45,15 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <button type="submit" class="btn btn-primary btn-lg w-100" id="generateBtn">
-                                    <i class="fas fa-magic me-2"></i>
-                                    Generate Story
-                                </button>
-                            </div>
-                            <div class="col-md-6">
-                                <a href="{{ url_for('library') }}" class="btn btn-outline-secondary btn-lg w-100">
-                                    <i class="fas fa-library me-2"></i>
-                                    View Library
-                                </a>
-                            </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-primary" id="generateBtn">
+                                <i class="fas fa-magic"></i>
+                                Generate Story
+                            </button>
+                            <a href="{{ url_for('library') }}" class="btn btn-secondary">
+                                <i class="fas fa-library"></i>
+                                View Library
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -86,9 +82,9 @@
     <div class="row justify-content-center mt-4" id="storyResult" style="display: none;">
         <div class="col-lg-10">
             <div class="card shadow">
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header d-flex justify-content-center align-items-center position-relative">
                     <h3 class="card-title mb-0" id="storyTitle"></h3>
-                    <div class="btn-group">
+                    <div class="btn-group position-absolute end-0 me-3">
                         <button class="btn btn-outline-primary btn-sm" id="playAudioBtn">
                             <i class="fas fa-play me-1"></i>
                             Play Audio
