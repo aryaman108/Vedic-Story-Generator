@@ -227,8 +227,7 @@ This project is created for educational and portfolio purposes. Feel free to stu
 **Aryaman** - Full-Stack Developer specializing in AI-powered applications
 
 - **GitHub**: [aryaman108](https://github.com/aryaman108)
-- **LinkedIn**: [Your LinkedIn Profile]
-- **Portfolio**: [Your Portfolio Website]
+- **LinkedIn**: [[Your LinkedIn Profile](https://www.linkedin.com/in/aryaman-parashar/)] 
 
 ---
 
