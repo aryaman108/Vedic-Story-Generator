@@ -24,74 +24,77 @@ genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 def generate_vedic_story(prompt):
-    """Generate a Vedic mythology story using Gemini Pro"""
-    for attempt in range(3):
+    """
+    Generate a Vedic mythology story using Google's Gemini AI model.
+
+    This function implements a robust story generation pipeline with:
+    - Retry logic for handling API failures
+    - Optimized prompts for faster, more accurate responses
+    - Comprehensive error handling for different failure types
+    - JSON parsing with fallback error responses
+
+    Args:
+        prompt (str): User-provided prompt describing the desired story
+
+    Returns:
+        dict: Story data containing title, content, scenes, characters, moral, and sources
+              Or error dict with 'error' key and 'type' field for error classification
+    """
+    # Retry up to 2 times to handle transient API failures
+    for attempt in range(2):
         try:
             logger.info(f"Generating story for prompt: {prompt} (Attempt {attempt + 1})")
 
-            system_prompt = """You are a master storyteller and scholar of Vedic Hindu dharma. You have encyclopedic knowledge of:
-- The four Vedas (Rig, Yajur, Sama, Atharva)
-- Major Upanishads and Puranas
-- Itihasas (Ramayana, Mahabharata)
-- Darshana Shastras and Dharma Shastras
-
-When creating stories, you MUST:
-1. Base all characters, events, and teachings on authentic Vedic sources
-2. Include specific references (e.g., "As described in the Bhagavata Purana 10.8.3")
-3. Maintain consistency with Vedic cosmology and philosophy
-4. Include Sanskrit terms with English translations
-5. Provide spiritual insights and moral lessons
-
-Format your response as a JSON object with these fields:
-{
-    "title": "Story Title",
-    "content": "Full story content...",
-    "scenes": [
-        "Detailed visual description of scene 1 for high-quality image generation - include specific colors, lighting, composition, and artistic style",
-        "Detailed visual description of scene 2 for high-quality image generation - include specific colors, lighting, composition, and artistic style",
-        "Detailed visual description of scene 3 for high-quality image generation - include specific colors, lighting, composition, and artistic style",
-        "Detailed visual description of scene 4 for high-quality image generation - include specific colors, lighting, composition, and artistic style"
-    ],
-    "characters": ["Character 1", "Character 2", ...],
-    "moral": "The moral or lesson of the story",
-    "sources": ["Reference 1", "Reference 2", ...]
-}
-
-IMPORTANT: For the scenes array, provide 4 detailed visual descriptions that capture different key moments of the story. Each scene description should be optimized for AI image generation and include:
-- Specific artistic style (traditional Indian painting, miniature art, etc.)
-- Detailed character appearances and expressions
-- Color palette and lighting
-- Composition and perspective
-- Cultural and mythological accuracy
-- High-quality artistic elements
-
-Make the story engaging, educational, and spiritually uplifting."""
-
-            # Generate the story
-            response = model.generate_content(
-                f"{system_prompt}\n\nCreate a Vedic story about: {prompt}"
+            # Optimized system prompt for Vedic storytelling - concise yet comprehensive
+            # Using f-string for better performance and readability
+            system_prompt = (
+                "You are a Vedic storyteller. Create authentic Hindu mythology stories with:\n"
+                "- Characters and events from Vedas, Puranas, Ramayana, Mahabharata\n"
+                "- Sanskrit terms with translations\n"
+                "- Spiritual insights and morals\n"
+                "- EXACTLY 4 detailed scene descriptions for images (no more, no less)\n\n"
+                "Return JSON:\n"
+                "{\n"
+                '  "title": "Story Title",\n'
+                '  "content": "Full story...",\n'
+                '  "scenes": ["Scene 1 description", "Scene 2", "Scene 3", "Scene 4"],\n'
+                '  "characters": ["Char1", "Char2"],\n'
+                '  "moral": "Lesson",\n'
+                '  "sources": ["Reference"]\n'
+                "}\n\n"
+                "CRITICAL: You MUST provide exactly 4 scenes in the scenes array. Each scene should be vivid and detailed for AI image generation with traditional Indian art style."
             )
 
-            # Extract the JSON response
+            # Generate the story with optimized settings
+            response = model.generate_content(
+                f"{system_prompt}\n\nCreate a Vedic story about: {prompt}",
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.7,  # Balanced creativity
+                    max_output_tokens=2048,  # Limit output size
+                )
+            )
+
+            # Extract and clean the JSON response from Gemini
             content = response.text.strip()
             logger.debug(f"Raw response from Gemini: {content}")
 
-            # Clean the response to extract just the JSON part
+            # Handle different markdown code block formats that Gemini might return
             if '```json' in content:
                 content = content.split('```json')[1].split('```')[0].strip()
             elif '```' in content:
                 content = content.split('```')[1].split('```')[0].strip()
 
-            # Parse the JSON
+            # Parse the cleaned JSON response
             story_data = json.loads(content)
             logger.info(f"Successfully generated story: {story_data.get('title', 'Untitled')}")
             return story_data
 
         except json.JSONDecodeError as e:
+            # Handle malformed JSON responses from the AI
             logger.error(f"Failed to parse JSON response on attempt {attempt + 1}: {e}")
             logger.error(f"Response content: {content}")
-            if attempt < 2:
-                logger.info("Retrying...")
+            if attempt < 1:  # Allow retry for first attempt only
+                logger.info("Retrying due to JSON parsing error...")
                 continue
             else:
                 return {"error": "Failed to parse story response from AI", "type": "json_error"}
@@ -108,13 +111,13 @@ Make the story engaging, educational, and spiritually uplifting."""
                 return {"error": "AI service access denied. Please check API configuration.", "type": "permission_denied"}
             elif "timeout" in error_str.lower() or "deadline" in error_str.lower():
                 logger.error("Gemini API timeout")
-                if attempt < 2:
+                if attempt < 1:  # Updated for 2 attempts
                     logger.info("Retrying due to timeout...")
                     continue
                 else:
                     return {"error": "AI service timeout. Please try again.", "type": "timeout"}
             else:
-                if attempt < 2:
+                if attempt < 1:  # Updated for 2 attempts
                     logger.info("Retrying due to unknown error...")
                     continue
                 else:

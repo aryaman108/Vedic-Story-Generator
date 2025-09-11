@@ -1,8 +1,6 @@
 import os
 import logging
-# from google.cloud import texttospeech  # Requires credentials
 from gtts import gTTS
-import uuid
 
 def generate_audio_narration(story_content, story_id):
     """Generate audio narration for the story using gTTS"""

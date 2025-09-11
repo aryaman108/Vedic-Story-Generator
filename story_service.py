@@ -15,19 +15,29 @@ logger = logging.getLogger(__name__)
 def create_story_from_prompt(prompt):
     """
     Complete story creation workflow:
-    1. Generate story content
-    2. Create database record
-    3. Generate images
-    4. Generate audio
-    5. Generate video
-    6. Update database record
+    1. Check cache for existing story
+    2. Generate story content if not cached
+    3. Create database record
+    4. Generate images
+    5. Generate audio
+    6. Generate video
+    7. Update database record
 
     Returns: (story, error_message)
     """
     try:
         logger.info(f"Starting story creation for prompt: {prompt}")
 
-        # Step 1: Generate the story content
+        # Step 1: Check for existing story with same prompt (caching)
+        import hashlib
+        prompt_hash = hashlib.md5(prompt.strip().lower().encode()).hexdigest()
+        existing_story = Story.query.filter_by(prompt_hash=prompt_hash).first()
+
+        if existing_story:
+            logger.info(f"Found cached story with ID: {existing_story.id}")
+            return existing_story, None
+
+        # Step 2: Generate the story content
         story_data = generate_vedic_story(prompt)
         if not story_data:
             return None, "Failed to generate story"
@@ -47,10 +57,11 @@ def create_story_from_prompt(prompt):
             else:
                 return None, f'AI Service Error: {error_message}'
 
-        # Step 2: Create new story record
+        # Step 3: Create new story record
         story = Story()
         story.title = story_data['title']
         story.prompt = prompt
+        story.prompt_hash = prompt_hash  # Add hash for caching
         story.content = story_data['content']
         story.characters = json.dumps(story_data.get('characters', []))
         story.moral = story_data.get('moral', '')
@@ -80,17 +91,16 @@ def create_story_from_prompt(prompt):
         # Step 5: Generate video if we have both image and audio
         if image_paths and audio_path:
             try:
-                # Use the first image for the video
-                first_image_path = image_paths[0]
+                # Use all images for the video sequence
                 video_path = generate_story_video_from_paths(
-                    first_image_path,
+                    image_paths,  # Pass all image paths
                     audio_path,
                     story_data['title'],
                     story_data['content'],
                     story.id
                 )
                 story.video_path = video_path
-                logger.info(f"Generated video for story {story.id}: {video_path}")
+                logger.info(f"Generated video sequence for story {story.id}: {video_path}")
             except Exception as e:
                 logger.error(f"Video generation failed: {e}")
                 story.video_path = None

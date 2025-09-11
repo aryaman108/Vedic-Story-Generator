@@ -9,6 +9,7 @@ class Story(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     prompt = db.Column(db.Text, nullable=False)
+    prompt_hash = db.Column(db.String(32), index=True)  # For caching
     content = db.Column(db.Text, nullable=False)
     images = db.Column(db.Text)  # JSON string of image paths
     audio_path = db.Column(db.String(500))
