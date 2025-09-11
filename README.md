@@ -4,8 +4,6 @@
   <img src="https://img.shields.io/badge/Python-3.8+-blue.svg" alt="Python Version">
   <img src="https://img.shields.io/badge/Flask-3.1+-green.svg" alt="Flask Version">
   <img src="https://img.shields.io/badge/AI--Powered-✓-orange.svg" alt="AI Powered">
-  <img src="https://img.shields.io/badge/Multimedia-Generator-✓-purple.svg" alt="Multimedia">
-  <img src="https://img.shields.io/badge/Full--Stack-Developer-Portfolio-red.svg" alt="Portfolio Project">
 </div>
 
 ## 🌟 Overview
@@ -227,8 +225,7 @@ This project is created for educational and portfolio purposes. Feel free to stu
 **Aryaman** - Full-Stack Developer specializing in AI-powered applications
 
 - **GitHub**: [aryaman108](https://github.com/aryaman108)
-- **LinkedIn**: [Your LinkedIn Profile]
-- **Portfolio**: [Your Portfolio Website]
+- **LinkedIn**: [[Aryaman Parashar Behera](https://www.linkedin.com/in/aryaman-parashar/)] 
 
 ---
 
